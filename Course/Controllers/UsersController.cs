@@ -1,6 +1,9 @@
 ﻿using System.Numerics;
 using Course.Data;
+using Course.Dtos;
 using Course.Repositories;
+using Course.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -12,62 +15,62 @@ namespace Course.Controllers
     public class UsersController : ControllerBase
     {
         
-        private UserRepository _repository;
+        private IUserService _userService;
 
-        public UsersController()
+        public UsersController(IUserService userService)
         {
-            _repository = new UserRepository();
-            /*Users = new List<User>()
-            {
-                new User() { Id = 1, FirstName = "Anna", LastName = "Teszt" },
-                new User() { Id = 2, FirstName = "Péter", LastName = "Teszt" }
-            };*/
+            _userService = userService;
         }
 
         // GET: api/<UsersController>
+        [Authorize(Policy = "AdminOnlyPolicy")]
         [HttpGet]
-        public IEnumerable<User> Get()
+        public async Task<IEnumerable<UserDto>> GetAsync()
         {
-            return _repository.GetAll();
+            return await _userService.GetAllAsync();
         }
 
         // GET api/<UsersController>/5
+        [Authorize]
         [HttpGet("{id}")]
-        public ActionResult<User> Get(int id)
+        public async Task<ActionResult<UserDto>> GetAsync(int id)
         {
-            var user = _repository.GetById(id);
+            var user = await _userService.GetByIdAsync(id);
             
             return user == null ? NotFound() : user;
         }
 
         // POST api/<UsersController>
+        [AllowAnonymous]
         [HttpPost]
-        public ActionResult Post([FromBody] User data)
+        public async Task<ActionResult> PostAsync([FromBody] UserDto data)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
             
-            _repository.Create(data);
+            await _userService.CreateAsync(data);
 
             return NoContent();
         }
 
         // PUT api/<UsersController>/5
+        [Authorize]
         [HttpPut("{id}")]
-        public ActionResult Put(int id, [FromBody] User data)
+        public async Task<ActionResult> PutAsync(int id, [FromBody] UserDto data)
         {
-            User? user = _repository.Update(id, data);
+            var user = await _userService.UpdateAsync(id, data);
 
             return user == null ? NotFound() : NoContent();
         }
 
         // DELETE api/<UsersController>/5
+        [Authorize]
         [HttpDelete("{id}")]
-        public ActionResult Delete(int id)
+        public async Task<ActionResult> DeleteAsync(int id)
         {
-            var response = _repository.Delete(id);
+            var response = await _userService.DeleteAsync(id);
 
             return response ? NoContent() : NotFound();
         }

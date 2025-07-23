@@ -1,4 +1,5 @@
 Microsoft.EntityFrameworkCore.Tools
 Tools -> NuGet Package Manager -> Package Manager Console
 Add-Migration InitialCreate
+Add-Migration AddUserCourseConnection
 Update-Database

@@ -1,60 +1,52 @@
 ﻿using Course.Data;
+using Microsoft.EntityFrameworkCore;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Course.Repositories
 {
-    public class UserRepository
+    public class UserRepository : IUserRepository
     {
 
         private readonly ApplicationDbContext _context;
 
-        public UserRepository()
+        public UserRepository(ApplicationDbContext context)
         {
-            _context = new ApplicationDbContext();
+            _context = context;
         }
 
-        public List<User> GetAll()
+        public Task<List<User>> GetAllAsync()
         {
-            return _context.Users.ToList();
+            return _context.Users.ToListAsync();
         }
 
-        public User? GetById(int id)
+        public Task<User?> GetByIdAsync(int id)
         {
-            return _context.Users.FirstOrDefault(user => user.Id == id);
+            return _context.Users.FirstOrDefaultAsync(user => user.Id == id);
         }
 
-        public void Create(User data)
+        public async Task CreateAsync(User data)
         {
-            _context.Users.Add(data);
-            _context.SaveChanges();
+            await _context.Users.AddAsync(data);
+            await _context.SaveChangesAsync();
         }
 
-        public User? Update(int id, User data)
-        {
-            var user = _context.Users.FirstOrDefault(user => user.Id == id);
-            if (user != null)
-            {
-                user.FirstName = data.FirstName;
-                user.LastName = data.LastName;
-                _context.SaveChanges();
+        public Task<int> UpdateAsync()
+            => _context.SaveChangesAsync();
 
-                return user;
-            }
-            return null;
-        }
-
-        public bool Delete(int id)
+        public async Task<bool> DeleteAsync(int id)
         {
-            var user = _context.Users.FirstOrDefault(user => user.Id == id);
+            var user = await _context.Users.FirstOrDefaultAsync(user => user.Id == id);
             if (user != null)
             {
                 _context.Users.Remove(user);
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
 
                 return true;
             }
             return false;
         }
 
+        public Task<User?> GetByEmailAsync(string email)
+            => _context.Users.FirstOrDefaultAsync(user => user.Email == email);
     }
 }
