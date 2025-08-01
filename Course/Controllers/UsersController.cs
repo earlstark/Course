@@ -1,7 +1,4 @@
-﻿using System.Numerics;
-using Course.Data;
-using Course.Dtos;
-using Course.Repositories;
+﻿using Course.Dtos;
 using Course.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -31,7 +28,7 @@ namespace Course.Controllers
         }
 
         // GET api/<UsersController>/5
-        [Authorize]
+        [Authorize(Policy = "AdminOnlyPolicy")]
         [HttpGet("{id}")]
         public async Task<ActionResult<UserDto>> GetAsync(int id)
         {
@@ -56,7 +53,7 @@ namespace Course.Controllers
         }
 
         // PUT api/<UsersController>/5
-        [Authorize]
+        [Authorize(Policy = "AdminOnlyPolicy")]
         [HttpPut("{id}")]
         public async Task<ActionResult> PutAsync(int id, [FromBody] UserDto data)
         {
@@ -66,7 +63,7 @@ namespace Course.Controllers
         }
 
         // DELETE api/<UsersController>/5
-        [Authorize]
+        [Authorize(Policy = "AdminOnlyPolicy")]
         [HttpDelete("{id}")]
         public async Task<ActionResult> DeleteAsync(int id)
         {
@@ -74,5 +71,16 @@ namespace Course.Controllers
 
             return response ? NoContent() : NotFound();
         }
+
+        // GET api/<UsersController>/me
+        [Authorize]
+        [HttpGet("me")]
+        public async Task<ActionResult<UserDto>> GetCurrentUserAsync()
+        {
+            var user = await _userService.GetCurrentUserAsync();
+
+            return user == null ? NotFound() : user;
+        }
+
     }
 }

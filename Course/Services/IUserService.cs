@@ -9,5 +9,6 @@ namespace Course.Services
         Task<List<UserDto>> GetAllAsync();
         Task<UserDto?> GetByIdAsync(int id);
         Task<UserDto?> UpdateAsync(int id, UserDto data);
+        Task<UserDto?> GetCurrentUserAsync();
     }
 }

@@ -1,6 +1,7 @@
 ﻿using Course.Data;
 using Course.Dtos;
 using Course.Repositories;
+using Microsoft.AspNetCore.Identity;
 
 namespace Course.Services
 {
@@ -18,10 +19,19 @@ namespace Course.Services
         {
             var user = await _userRepository.GetByEmailAsync(loginDto.Email);
 
-            if (user != null && user.Password == loginDto.Password)
+            if (user == null)
+            {
+                return null;
+            }
+
+            var hasher = new PasswordHasher<User>();
+            var loginResult = hasher.VerifyHashedPassword(user, user.Password, loginDto.Password);
+
+            if (loginResult == PasswordVerificationResult.Success)
             {
                 return user;
             }
+
             return null;
         }
     }

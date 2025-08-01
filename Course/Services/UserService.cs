@@ -1,20 +1,27 @@
-﻿using Course.Data;
+﻿using System.Security.Claims;
+using Course.Data;
 using Course.Dtos;
 using Course.Repositories;
+using Microsoft.AspNetCore.Identity;
 
 namespace Course.Services
 {
     public class UserService : IUserService
     {
         private readonly IUserRepository _userRepository;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public UserService(IUserRepository userRepository)
+        public UserService(IUserRepository userRepository, IHttpContextAccessor httpContextAccessor)
         {
             _userRepository = userRepository;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public Task CreateAsync(UserDto data)
-            => _userRepository.CreateAsync(MapToModel(data));
+        {
+            data.Password = new PasswordHasher<User>().HashPassword(null, data.Password);
+            return _userRepository.CreateAsync(MapToModel(data));
+        }
 
         public Task<bool> DeleteAsync(int id)
             => _userRepository.DeleteAsync(id);
@@ -48,13 +55,27 @@ namespace Course.Services
             return user != null ? MapToDto(user) : null;
         }
 
+        public async Task<UserDto?> GetCurrentUserAsync()
+        {
+            var userId = _httpContextAccessor?.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (userId == null)
+            {
+                return null;
+            }
+
+            var user = await GetByIdAsync(int.Parse(userId));
+
+            return user;
+        }
+
         private static UserDto MapToDto(User user) => new()
         {
             Id = user.Id,
             FirstName = user.FirstName,
             LastName = user.LastName,
             Email = user.Email,
-            Password = user.Password
+            Password = user.Password,
         };
 
         private static User MapToModel(UserDto userDto) => new()
@@ -63,7 +84,7 @@ namespace Course.Services
             FirstName = userDto.FirstName,
             LastName = userDto.LastName,
             Email = userDto.Email,
-            Password = userDto.Password
+            Password = userDto.Password,
         };
 
     }
