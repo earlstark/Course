@@ -3,6 +3,7 @@ using Course.Data;
 using Course.Dtos;
 using Course.Repositories;
 using Microsoft.AspNetCore.Identity;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Course.Services
 {
@@ -19,7 +20,6 @@ namespace Course.Services
 
         public Task CreateAsync(UserDto data)
         {
-            data.Password = new PasswordHasher<User>().HashPassword(null, data.Password);
             return _userRepository.CreateAsync(MapToModel(data));
         }
 
@@ -84,7 +84,7 @@ namespace Course.Services
             FirstName = userDto.FirstName,
             LastName = userDto.LastName,
             Email = userDto.Email,
-            Password = userDto.Password,
+            Password = new PasswordHasher<User>().HashPassword(null, userDto.Password),
         };
 
     }
